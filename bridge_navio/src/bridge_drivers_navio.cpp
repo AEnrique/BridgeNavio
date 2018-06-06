@@ -141,7 +141,7 @@ using namespace std;
 	void BridgeDriversNavio::runThreads()
 	{
 		_status_data._shmmsg = get_shm<shm_status>(&_status);
-		std::thread (acquireSTATUSData,&this->_status_data).detach();
+		//std::thread (acquireSTATUSData,&this->_status_data).detach();
 		for(std::string name_sensor: _sensor){
 			switch(fhash(name_sensor.c_str())){
 				case fhash("mpu"):

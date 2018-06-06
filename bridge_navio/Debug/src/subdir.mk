@@ -24,7 +24,7 @@ CPP_DEPS += \
 src/%.o: ../src/%.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: Cross G++ Compiler'
-	arm-linux-gnueabihf-g++ -std=c++1y -I/usr/local/boost/include -I"/home/pi/Repos/BridgeNavio/bridge_navio/include" -I"/home/pi/Repos/BridgeNavio/Navio2" -I"/home/pi/Repos/BridgeNavio/libshm_navio" -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
+	arm-linux-gnueabihf-g++ -std=c++1y -I/usr/local/boost/include -I"../include" -I"../../Navio2" -I"../../libshm_navio" -O0 -g3 -Wall -c -Wno-psabi -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
