@@ -41,6 +41,7 @@
 #define SHM_LOCALPOSPX4          "/shm_localPositionPX4EKF2"    //-R/W global position ekf2 px4
 #define SHM_STATUS               "/shm_status"   				//-R/W status
 #define SHM_VICON                "/shm_vicon"   				//-R/W vicon data position and attitude(quaternion)
+#define SHM_CARTESIANARM         "/shm_cartesianarm"   			//-R/W Cartesian Arm data
 
 ///SEMAPHORES CONSTANTS
 #define SEM_MPU9250              "/mysem_mpu9250"
@@ -61,6 +62,7 @@
 #define SEM_LOCALPOSPX4          "/mysem_localPositionPX4EKF2"   //-R/W global position ekf2 px4
 #define SEM_STATUS               "/mysem_status"   //-R/W status
 #define SEM_VICON                "/mysem_vicon"
+#define SEM_CARTESIANARM         "/mysem_cartesianarm"
 ///////////////////////////////
 
 

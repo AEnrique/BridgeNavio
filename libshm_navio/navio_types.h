@@ -37,6 +37,16 @@ typedef struct
 
 typedef struct
 {
+    float _d1; //m
+    float _d2; //m
+    float _theta3; //rad
+    float _q3; //rad
+    float _tau3;
+    float _f_link;
+}shm_cartesianarm;
+
+typedef struct
+{
     float _temperature;
     float _ax;
     float _ay;
