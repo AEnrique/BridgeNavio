@@ -25,5 +25,6 @@ CPP_DEPS :=
 SUBDIRS := \
 Navio2 \
 Navio2/Debug \
+include \
 src \
 

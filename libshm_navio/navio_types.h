@@ -113,31 +113,15 @@ typedef struct
   double _ver_accur;
 }shm_gps;
 
-/*typedef struct
-{
-	int8_t _sensor_id;
-	int16_t _quality;
-	float _flow_comp_m_x;
-	float _flow_comp_m_y;
-	float _ground_distance;
-	int16_t _flow_x;
-	int16_t _flow_y;
-} shm_px4flow;*/
 
 typedef struct
 {
-	uint16_t _frame_count;// counts created I2C frames [#frames]
-	int16_t _pixel_flow_x_sum;// latest x flow measurement in pixels*10 [pixels]
-	int16_t _pixel_flow_y_sum;// latest y flow measurement in pixels*10 [pixels]
-	int16_t _flow_comp_m_x;// x velocity*1000 [meters/sec]
-	int16_t _flow_comp_m_y;// y velocity*1000 [meters/sec]
-	int16_t _qual;// Optical flow quality / confidence [0: bad, 255: maximum quality]
-	int16_t _gyro_x_rate; // latest gyro x rate [rad/sec]
-	int16_t _gyro_y_rate; // latest gyro y rate [rad/sec]
-	int16_t _gyro_z_rate; // latest gyro z rate [rad/sec]
-	uint8_t _gyro_range; // gyro range [0 .. 7] equals [50 deg/sec .. 2000 deg/sec]
-	uint8_t _sonar_timestamp;// time since last sonar update [milliseconds]
-	int16_t _ground_distance;// Ground distance in meters*1000 [meters]. Positive value: distance known. Negative value: Unknown distance
+	float     _ground_distance; //  # distance to ground in meters
+	int16_t   _flow_x; //           # x-component of optical flow in pixels
+	int16_t   _flow_y; //           # y-component of optical flow in pixels
+	float     _velocity_x; //       # x-component of scaled optical flow in m/s
+	float     _velocity_y; //       # y-component of scaled optical flow in m/s
+	uint8_t   _quality; //          # quality of optical flow estimate
 
 }shm_px4flow;
 

@@ -9,6 +9,7 @@ RM := rm -rf
 # All of the sources participating in the build are defined here
 -include sources.mk
 -include src/subdir.mk
+-include include/subdir.mk
 -include Navio2/Debug/subdir.mk
 -include Navio2/subdir.mk
 -include subdir.mk

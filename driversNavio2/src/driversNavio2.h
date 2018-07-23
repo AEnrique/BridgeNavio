@@ -32,6 +32,8 @@
 #include <sys/socket.h>
 #include "I2Cdev.h"
 
+#include <SerialComm.h>
+
 #include <boost/asio.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/array.hpp>
@@ -97,7 +99,7 @@ typedef struct i2c_integral_frame
 
 typedef struct
 {
-
+	//SerialComm _comm;
 	shm_px4flow _shmmsg;
 }px4flow_str;
 
@@ -437,47 +439,46 @@ void * acquireTotalStationData(void * totalStation)
 	boost::asio::io_service io_service;
 	//create a UDP socket
 
-	boost::asio::ip::udp::socket socket(io_service, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 44000));
+	boost::asio::ip::udp::socket socket(io_service, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 8000));
 
 	if (!socket.is_open())
 	{
 	   printf("Failed to open UDP client socket");
+	}else{
+		boost::array<char, 1> send_buf  = { 0 };
+		boost::asio::ip::udp::endpoint receiver_endpoint(boost::asio::ip::address::from_string("10.0.0.200"),8000);
+		socket.send_to(boost::asio::buffer(send_buf), receiver_endpoint);
+
+		totalStation_str* TS = (totalStation_str*)totalStation;
+		UDPTotalStation_msg msg = {0.0,0.0,0.0,0};
+		TS->_shmmsg._x=msg._x;
+		TS->_shmmsg._y=msg._y;
+		TS->_shmmsg._z=msg._z;
+		TS->_shmmsg._time=static_cast<double>(msg._time);
+
+		boost::array<char, sizeof(shm_totalStation)> recv_buf;
+		boost::asio::ip::udp::endpoint remote_endpoint(boost::asio::ip::address::from_string("10.0.0.200"),8000);
+
+		while (true) {
+			//boost::asio::deadline_timer t(io, boost::posix_time::microseconds(50000));
+
+			if (socket.receive_from(boost::asio::buffer(recv_buf),remote_endpoint) == sizeof(shm_totalStation)){
+				memcpy(&msg,&recv_buf[0],sizeof(shm_totalStation));
+				if ((msg._x == 0.0)&&(msg._y == 0.0)&&(msg._z == 0.0)){
+					TS->_shmmsg._time = 0.0;
+				}else{
+					TS->_shmmsg._x=msg._x;
+					TS->_shmmsg._y=msg._y;
+					TS->_shmmsg._z=msg._z;
+					TS->_shmmsg._time=static_cast<double>(msg._time);
+				}
+				recv_buf.assign(0);
+				//printf("x: %f| y: %f| z: %f| time: %f\n",TS->_shmmsg._x,TS->_shmmsg._y,TS->_shmmsg._z,TS->_shmmsg._time);
+			}
+			//t.wait();
+		}
+		socket.close();
 	}
-
-
-	boost::array<char, 1> send_buf  = { 0 };
-	boost::asio::ip::udp::endpoint receiver_endpoint(boost::asio::ip::address::from_string("10.0.0.200"),44000);
-	socket.send_to(boost::asio::buffer(send_buf), receiver_endpoint);
-
-	totalStation_str* TS = (totalStation_str*)totalStation;
-	UDPTotalStation_msg msg = {0.0,0.0,0.0,0};
-	TS->_shmmsg._x=msg._x;
-	TS->_shmmsg._y=msg._y;
-	TS->_shmmsg._z=msg._z;
-	TS->_shmmsg._time=static_cast<double>(msg._time);
-
-    while (true) {
-    	boost::asio::deadline_timer t(io, boost::posix_time::microseconds(50000));
-
-        boost::array<char, sizeof(shm_totalStation)> recv_buf;
-        boost::asio::ip::udp::endpoint remote_endpoint(boost::asio::ip::address::from_string("10.0.0.200"),44000);
-        //boost::system::error_code error;
-        //printf("Receiving data...\n");
-    	socket.receive_from(boost::asio::buffer(recv_buf),remote_endpoint);
-    	memcpy(&msg,&recv_buf[0],sizeof(shm_totalStation));
-
-        if ((msg._x == 0.0)&&(msg._y == 0.0)&&(msg._z == 0.0)){
-        	TS->_shmmsg._time = 0.0;
-        }else{
-        	TS->_shmmsg._x=msg._x;
-        	TS->_shmmsg._y=msg._y;
-        	TS->_shmmsg._z=msg._z;
-        	TS->_shmmsg._time=static_cast<double>(msg._time);
-        }
-        //printf("x: %f| y: %f| z: %f| time: %d\n",TS->_shmmsg._x,TS->_shmmsg._y,TS->_shmmsg._z,TS->_shmmsg._time);
-        t.wait();
-    }
-    socket.close();
     pthread_exit(NULL);
 }
 
@@ -508,135 +509,26 @@ void * acquireGPSData(void * gps_sig)
 	}
 	pthread_exit(NULL);
 }
-void * acquireI2CsplitterData(void * i2cSplitter)
-{
-	boost::asio::io_service io;
-	i2cSplitter_str* i2cSplitter_data = (i2cSplitter_str*) i2cSplitter;
-	unsigned char buffer_data_px4flow[22];
-	unsigned char buffer_data_sf11c[2];
-	//uint16_t timeout =I2Cdev::readTimeout;
-	//timeout = 0;
-	uint16_t _data_sf11c;
-	shm_px4flow _data_px4flow;
-	int fd;
-	int Nbytes;
-	uint8_t regAddr = 0x00;
 
-	if ((fd = open("/dev/i2c-1", O_RDWR)) < 0)//with Grove cape i2c-2 is i2c-1 and vice.
-	{
-		fprintf(stderr, "Failed to open i2c bus\n");
-		exit(1);
-	}
-	while(true){
-		boost::asio::deadline_timer t(io, boost::posix_time::microseconds(50000));
-
-		if (ioctl(fd, I2C_SLAVE, 0x66) < 0) {
-		    printf("Failed to acquire bus access and/or talk to slave.\n");
-		    exit(1);
-		}else{
-			if (read(fd, buffer_data_sf11c, 2) != 2) {
-				printf("Unable to read from SF11C\n");
-			} else {
-				_data_sf11c = ((uint16_t)buffer_data_sf11c[0] << 8) | buffer_data_sf11c[1];
-				i2cSplitter_data->_shmmsg_lightware._z = float(_data_sf11c)*1e-2f;
-
-			}
-		}
-
-		if (ioctl(fd, I2C_SLAVE, 0x42) < 0) {
-			fprintf(stderr, "Failed to select device: %s\n", strerror(errno));
-			exit(1);
-		}else{
-		    if (write(fd, &regAddr, 1) != 1) {
-		        fprintf(stderr, "Failed to write reg: %s\n", strerror(errno));
-		    }
-		    Nbytes = read(fd, &buffer_data_px4flow, sizeof(shm_px4flow));
-
-		    if (Nbytes < 0) {
-		        fprintf(stderr, "Failed to read device(%d): %s\n", Nbytes, ::strerror(errno));
-		    } else if (Nbytes != sizeof(shm_px4flow)) {
-		        fprintf(stderr, "Short read  from device, expected %d, got %d\n", sizeof(shm_px4flow), Nbytes);
-		    }else{
-		    	memcpy(&_data_px4flow,&buffer_data_px4flow[0],sizeof(shm_px4flow));
-		    	i2cSplitter_data->_shmmsg_px4flow = _data_px4flow;
-		    }
-		}
-		t.wait();
-	}
-	close(fd);
-	pthread_exit(NULL);
-}
 void * acquirePX4FlowData(void * flow_sig)
 {
 	boost::asio::io_service io;
 	px4flow_str* flow_data = (px4flow_str*) flow_sig;
-	unsigned char buffer_data[22];
-	//uint16_t timeout =I2Cdev::readTimeout;
-	uint16_t count_falied = 0;
-	//timeout = 0;
-	shm_px4flow _data;
-	//int8_t count = 0;
-	uint8_t regAddr = 0x00;
-	int Nbytes;
-	uint8_t length = sizeof(shm_px4flow);
 
-    int fd = open(I2CDEV, O_RDWR);
-    if (fd < 0) {
-        fprintf(stderr, "Failed to open device: %s\n", strerror(errno));
-        //return(-1);
-    }
-    if (ioctl(fd, I2C_SLAVE, 0x42) < 0) {
-        fprintf(stderr, "Failed to select device: %s\n", strerror(errno));
-        close(fd);
-        //return(-1);
-    }
+	px::SerialComm comm(std::string("/px4flow"));
 
-	while(true)
-	{
-		boost::asio::deadline_timer t(io, boost::posix_time::microseconds(66700));
-		if (count_falied<10){
-		    if (write(fd, &regAddr, 1) != 1) {
-		        fprintf(stderr, "Failed to write reg: %s\n", strerror(errno));
-		        count_falied++;
-		        //close(fd);
-		        //return(-1);
-		    }else{
-		    	Nbytes = read(fd, &buffer_data, length);
-		    	if (Nbytes < 0) {
-		    		fprintf(stderr, "Failed to read device(%d): %s\n", Nbytes, ::strerror(errno));
-		    		count_falied++;
-		        //close(fd);
-		        //return(-1);
-		    	} else if (Nbytes != length) {
-		    		fprintf(stderr, "Short read  from device, expected %d, got %d\n", length, Nbytes);
-		    		count_falied++;
+	if (!comm.open(std::string("/dev/ttyAMA0"),115200)){
+		printf("ERROR comm: invalid port.\n");
+	}else{
+		while(true)
+		{
+			boost::asio::deadline_timer t(io, boost::posix_time::microseconds(10000));
 
-		        //return(-1);
-		    	}else{
-		    		memcpy(&_data,&buffer_data[0],length);
-		    		flow_data->_shmmsg = _data;
-		    	}
-		    }
-		    //printf("1: Z: %f\n",static_cast<float>(_data._ground_distance)/1000.0f);
-
-				/*Nbytes = I2Cdev::readBytes(0x42, 0x00, sizeof(shm_px4flow), buffer_data,timeout);
-				if (Nbytes != sizeof(shm_px4flow)) {
-					printf("Unable to read from PX4FLOW. %d Bytes\r",Nbytes);
-					fflush(stdout);
-					count_falied++;
-				} else {
-					memcpy(&_data,&buffer_data[0],sizeof(shm_px4flow));
-					flow_data->_shmmsg = _data;
-					//printf("1: Z: %f\n",static_cast<float>(_data._ground_distance)/1000.0f);
-
-				}*/
-
-		}else{
-			close(fd);
+			flow_data->_shmmsg = comm.m_optFlowMsg;
+			//printf("Z: %f\n",flow_data->_shmmsg._ground_distance);
+			t.wait();
 		}
-		t.wait();
 	}
-	close(fd);
 	pthread_exit(NULL);
 }
 

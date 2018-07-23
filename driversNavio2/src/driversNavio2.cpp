@@ -222,18 +222,6 @@ int main(int argc, char * argv[]) {
 		        return 0;
 		    }
 		}
-		/*if (sensor[6] && sensor[9]){
-			printf("sf11c and PX4FLOW launched\n");
-			i2cSplitter_str i2cSplitter_signals;
-
-			pthread_t i2cSplitter_thread;
-			if(pthread_create(&i2cSplitter_thread, NULL, acquireI2CsplitterData, (void *)&i2cSplitter_signals))
-			{
-				printf("Error: Failed to create sf11c thread\n");
-				return 0;
-			}
-
-		}else{*/
 			if (sensor[6]){
 				printf("sf11c launched\n");
 				sf11c_signals._sensor = 0x66;
@@ -255,7 +243,7 @@ int main(int argc, char * argv[]) {
 				}
 
 			}
-		//}
+
 		if (sensor[7]){
 			printf("totalstation launched\n");
 		    pthread_t totalstation_thread;
