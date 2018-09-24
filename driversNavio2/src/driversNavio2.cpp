@@ -268,6 +268,7 @@ int main(int argc, char * argv[]) {
 	    while (true) {
 	    	boost::asio::deadline_timer t(io, boost::posix_time::microseconds(2500));
 	    	rcio._shmmsg_rcout = get_shm<shm_RCou>(&rcout);
+
 			if (set_shm<shm_imu>(&imu_mpu9250, mpu9250_imu._shmmsg) == 0)
 				printf("imu_mpu9250:Error to write in shared memory direction.\n");
 			if (set_shm<shm_imu>(&imu_lsm9ds1, lsm9ds1_imu._shmmsg) == 0)

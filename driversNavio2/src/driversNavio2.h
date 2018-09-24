@@ -192,6 +192,7 @@ void * sendRCIOData(void * rcio)
 		rc->_pwm.set_frequency(i, 400);
 		rc->_pwm.enable(i);
 	}
+
 	if (rc->_calib_rotors_required){
 		printf("Calibration of ESC in process...\n");
 		for(i = 0;i < rc->_numRotors; i++)
@@ -436,6 +437,10 @@ void * acquireBarometerData(void * barom)
 void * acquireTotalStationData(void * totalStation)
 {
 	boost::asio::io_service io;
+	boost::asio::ip::udp::resolver resolver(io);
+	boost::asio::ip::udp::resolver::query query("aegrvc.local", "8000");
+	boost::asio::ip::udp::resolver::iterator iter = resolver.resolve(query);
+
 	boost::asio::io_service io_service;
 	//create a UDP socket
 
@@ -446,7 +451,9 @@ void * acquireTotalStationData(void * totalStation)
 	   printf("Failed to open UDP client socket");
 	}else{
 		boost::array<char, 1> send_buf  = { 0 };
-		boost::asio::ip::udp::endpoint receiver_endpoint(boost::asio::ip::address::from_string("10.0.0.200"),8000);
+		//boost::asio::ip::udp::endpoint receiver_endpoint(boost::asio::ip::address::from_string("192.168.1.104"),8000);
+		boost::asio::ip::udp::endpoint receiver_endpoint = iter->endpoint();
+
 		socket.send_to(boost::asio::buffer(send_buf), receiver_endpoint);
 
 		totalStation_str* TS = (totalStation_str*)totalStation;
@@ -457,10 +464,10 @@ void * acquireTotalStationData(void * totalStation)
 		TS->_shmmsg._time=static_cast<double>(msg._time);
 
 		boost::array<char, sizeof(shm_totalStation)> recv_buf;
-		boost::asio::ip::udp::endpoint remote_endpoint(boost::asio::ip::address::from_string("10.0.0.200"),8000);
 
+		//boost::asio::ip::udp::endpoint remote_endpoint(boost::asio::ip::address::from_string("192.168.1.104"),8000);
+		boost::asio::ip::udp::endpoint remote_endpoint = iter->endpoint();;
 		while (true) {
-			//boost::asio::deadline_timer t(io, boost::posix_time::microseconds(50000));
 
 			if (socket.receive_from(boost::asio::buffer(recv_buf),remote_endpoint) == sizeof(shm_totalStation)){
 				memcpy(&msg,&recv_buf[0],sizeof(shm_totalStation));
@@ -475,7 +482,6 @@ void * acquireTotalStationData(void * totalStation)
 				recv_buf.assign(0);
 				//printf("x: %f| y: %f| z: %f| time: %f\n",TS->_shmmsg._x,TS->_shmmsg._y,TS->_shmmsg._z,TS->_shmmsg._time);
 			}
-			//t.wait();
 		}
 		socket.close();
 	}
