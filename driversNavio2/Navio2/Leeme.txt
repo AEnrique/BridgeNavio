@@ -1,4 +1,0 @@
-
-1.project properties->C/C++ General->Path and Symbols ... ->Includes->GNU C++ add [$PATH/NAVIO2;]
-
-2.project properties->C/C++ General->Path and Symbols ... ->Source Location->Link folder add [$PATH/NAVIO2;]
