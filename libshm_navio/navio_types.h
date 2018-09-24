@@ -1,9 +1,23 @@
-/*
- * navio_types.h
- *
- *  Created on: 1/12/2017
- *      Author: GRVC
- */
+//----------------------------------------------------------------------------------------------------------------------
+// GRVC AUTOPILOT
+//----------------------------------------------------------------------------------------------------------------------
+// The MIT License (MIT)
+//
+// Copyright (c) 2016 GRVC University of Seville
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+// documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+// rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+// permit persons to whom the Software is furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+// Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+// WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
+// OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//----------------------------------------------------------------------------------------------------------------------
 
 #ifndef NAVIO_TYPES_H_
 #define NAVIO_TYPES_H_
@@ -103,6 +117,19 @@ typedef struct
 
 typedef struct
 {
+	float _x;        // x position
+	float _y;        // y position
+	float _z;        // z position
+	float _qx;    	   // qx orientation
+	float _qy;         // qy orientation
+	float _qz;         // qz orientation
+	float _qw;         // qw orientation
+
+}shm_svo;
+
+
+typedef struct
+{
   unsigned short _status;
   double _time;
   double _lon;
@@ -124,5 +151,54 @@ typedef struct
 	uint8_t   _quality; //          # quality of optical flow estimate
 
 }shm_px4flow;
+
+typedef struct{
+
+	float _rollspeed;	/**< Roll angular speed (rad/s, Tait-Bryan, NED)		*/
+	float _pitchspeed;	/**< Pitch angular speed (rad/s, Tait-Bryan, NED)		*/
+	float _yawspeed;		/**< Yaw angular speed (rad/s, Tait-Bryan, NED)			*/
+	float _q[4];		/**< Quaternion (NED)						*/
+
+	uint8_t _check;
+} shm_attitudePX4EKF2;
+
+typedef struct{
+	//uint64_t timestamp;		/**< Time of this estimate, in microseconds since system start		*/
+	//uint64_t time_gps_usec;		/**< GPS timestamp in microseconds					   */
+	double _lat;			/**< Latitude in degrees							 	   */
+	double _lon;			/**< Longitude in degrees							 	   */
+	float _alt;			/**< Altitude AMSL in meters						 	   */
+	float _vel_n; 			/**< Ground north velocity, m/s				 			   */
+	float _vel_e;			/**< Ground east velocity, m/s							   */
+	float _vel_d;			/**< Ground downside velocity, m/s						   */
+	float _yaw; 			/**< Yaw in radians -PI..+PI.							   */
+	float _eph;			/**< Standard deviation of position estimate horizontally */
+	float _epv; /**< Standard deviation of position vertically */
+	uint8_t _check;
+} shm_globalPositionPX4EKF2;
+
+typedef struct{
+	//bool _xy_valid;			/**< true if x and y are valid */
+	//bool _z_valid;			/**< true if z is valid */
+	//bool _v_xy_valid;		/**< true if vy and vy are valid */
+	//bool _v_z_valid;			/**< true if vz is valid */
+		/* Position in local NED frame */
+	float _x;				/**< X position in meters in NED earth-fixed frame */
+	float _y;				/**< X position in meters in NED earth-fixed frame */
+	float _z;				/**< Z position in meters in NED earth-fixed frame (negative altitude) */
+		/* Velocity in NED frame */
+	float _vx; 				/**< Ground X Speed (Latitude), m/s in NED */
+	float _vy;				/**< Ground Y Speed (Longitude), m/s in NED */
+	float _vz;				/**< Ground Z Speed (Altitude), m/s	in NED */
+		/* Heading */
+	float _yaw;
+// Acceleration in NED frame
+	float _ax;       // North velocity derivative in NED earth-fixed frame, (metres/sec^2)
+	float _ay;       // East velocity derivative in NED earth-fixed frame, (metres/sec^2)
+	float _az;       // Down velocity derivative in NED earth-fixed frame, (metres/sec^2)
+	uint8_t _check;
+} shm_localPositionPX4EKF2;
+
+
 
 #endif /* NAVIO_TYPES_H_ */
