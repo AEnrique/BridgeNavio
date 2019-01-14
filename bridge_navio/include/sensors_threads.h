@@ -29,10 +29,12 @@
 #include <linux/i2c-dev.h>
 #include <boost/array.hpp>
 #include <sstream>
-
+#include <boost/filesystem.hpp>
+#include <boost/range/iterator_range.hpp>
+#include <iostream>
 ////////////////////////////
 #include<stdio.h> //printf
-#include<string.h> //memset
+#include<string> //memset
 #include<stdlib.h> //exit(0);
 #include<stdint.h>
 #include<arpa/inet.h>
@@ -327,7 +329,7 @@
 						totalStation->_shmmsg._time=static_cast<double>(msg._time);
 					}
 					recv_buf.assign(0);
-					//printf("x: %f| y: %f| z: %f| time: %f\n",TS->_shmmsg._x,TS->_shmmsg._y,TS->_shmmsg._z,TS->_shmmsg._time);
+					//printf("x: %f| y: %f| z: %f| time: %f\n",totalStation->_shmmsg._x,totalStation->_shmmsg._y,totalStation->_shmmsg._z,totalStation->_shmmsg._time);
 				}
 			}
 			socket.close();
@@ -454,6 +456,89 @@
 
 	}
 //-----------------------------------------------------------------------------------------//
+	using namespace boost::filesystem;
+	void acquireSTATUSData(status_str * status)
+	{
+		//TODO: save logs with date
+		boost::asio::io_service io;
+		int n = 0;
+		uint8_t state = 0;
+		double time_ant = 0;;
+		path p("/home/pi/logs");
+		if(is_directory(p)) {
+			std::cout << p << " is a directory containing:\n";
+			n = size(boost::make_iterator_range(directory_iterator(p), {}));
+		    //std::cout << n << "\n";
+		}
 
+		std::string nameFile;
+
+		ofstream ofs;
+
+	    while (true) {
+	    	boost::asio::deadline_timer t(io, boost::posix_time::microseconds(2500));
+	    	if (state == 0 && status->_shmmsg->_isStarted == 1){
+	    		state = 1;
+	    		nameFile = "/home/pi/logs/log_"+std::to_string(n)+".txt";
+	    		ofs.open(nameFile);
+	    	}else{
+	    		if (state == 1 && status->_shmmsg->_isStarted == 1){
+	    			if (status->_shmmsg->_time!=time_ant){
+	    				time_ant = status->_shmmsg->_time;
+						ofs << status->_shmmsg->_time << '\t';
+						ofs << status->_shmmsg->_vehicle_attitude[0] << '\t';
+						ofs << status->_shmmsg->_vehicle_attitude[1] << '\t';
+						ofs << status->_shmmsg->_vehicle_attitude[2] << '\t';
+						ofs << status->_shmmsg->_vehicle_attitude[3] << '\t';
+						ofs << status->_shmmsg->_vehicle_attitude[4] << '\t';
+						ofs << status->_shmmsg->_vehicle_attitude[5] << '\t';
+						ofs << status->_shmmsg->_vehicle_attitude_desired[0] << '\t';
+						ofs << status->_shmmsg->_vehicle_attitude_desired[1] << '\t';
+						ofs << status->_shmmsg->_vehicle_attitude_desired[2] << '\t';
+						ofs << status->_shmmsg->_vehicle_attitude_desired[3] << '\t';
+						ofs << status->_shmmsg->_vehicle_attitude_desired[4] << '\t';
+						ofs << status->_shmmsg->_vehicle_attitude_desired[5] << '\t';
+						ofs << status->_shmmsg->_vehicle_position[0] << '\t';
+						ofs << status->_shmmsg->_vehicle_position[1] << '\t';
+						ofs << status->_shmmsg->_vehicle_position[2] << '\t';
+						ofs << status->_shmmsg->_vehicle_position[3] << '\t';
+						ofs << status->_shmmsg->_vehicle_position[4] << '\t';
+						ofs << status->_shmmsg->_vehicle_position[5] << '\t';
+						ofs << status->_shmmsg->_vehicle_position_desired[0] << '\t';
+						ofs << status->_shmmsg->_vehicle_position_desired[1] << '\t';
+						ofs << status->_shmmsg->_vehicle_position_desired[2] << '\t';
+						ofs << status->_shmmsg->_vehicle_position_desired[3] << '\t';
+						ofs << status->_shmmsg->_vehicle_position_desired[4] << '\t';
+						ofs << status->_shmmsg->_vehicle_position_desired[5] << '\t';
+						ofs << status->_shmmsg->_pwm_commanded[0] << '\t';
+						ofs << status->_shmmsg->_pwm_commanded[1] << '\t';
+						ofs << status->_shmmsg->_pwm_commanded[2] << '\t';
+						ofs << status->_shmmsg->_pwm_commanded[3] << '\t';
+						ofs << status->_shmmsg->_pwm_commanded[4] << '\t';
+						ofs << status->_shmmsg->_pwm_commanded[5] << '\t';
+						ofs << status->_shmmsg->_pwm_commanded[6] << '\t';
+						ofs << status->_shmmsg->_pwm_commanded[7] << '\t';
+						ofs << status->_shmmsg->_pwm_commanded[8] << '\t';
+						ofs << status->_shmmsg->_pwm_commanded[9] << '\t';
+						ofs << status->_shmmsg->_pwm_commanded[10] << '\t';
+						ofs << status->_shmmsg->_pwm_commanded[11] << '\t';
+						ofs << status->_shmmsg->_pwm_commanded[12] << '\t';
+						ofs << status->_shmmsg->_pwm_commanded[13] << '\n';
+	    			}
+	    		}else{
+	    			if (state == 1 && status->_shmmsg->_isStarted == 0){
+	    				ofs.close();
+	    				state = 0;
+	    				time_ant = 0;
+	    				n++;
+	    			}else{
+
+	    			}
+	    		}
+	    	}
+
+	    	t.wait();
+		}
+	}
 
 #endif /* SENSORS_THREADS_H_ */

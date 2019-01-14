@@ -38,7 +38,7 @@
 #define SHM_ATTPX4               "/shm_attitudePX4EKF2"         //-R/W attitude ekf2 px4
 #define SHM_GLOBALPOSPX4         "/shm_globalPositionPX4EKF2"   //-R/W local position ekf2 px4
 #define SHM_LOCALPOSPX4          "/shm_localPositionPX4EKF2"   //-R/W global position ekf2 px4
-
+#define SHM_STATUS               "/shm_status"   //-R/W status
 
 ///SEMAPHORES CONSTANTS
 #define SEM_MPU9250              "/mysem_mpu9250"
@@ -56,6 +56,7 @@
 #define SEM_ATTPX4               "/mysem_attitudePX4EKF2"         //-R/W attitude ekf2 px4
 #define SEM_GLOBALPOSPX4         "/mysem_globalPositionPX4EKF2"   //-R/W local position ekf2 px4
 #define SEM_LOCALPOSPX4          "/mysem_localPositionPX4EKF2"   //-R/W global position ekf2 px4
+#define SEM_STATUS               "/mysem_status"   //-R/W status
 ///////////////////////////////
 
 

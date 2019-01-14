@@ -26,6 +26,7 @@ using namespace std;
 		_sensor.push_back("rcio");
 		create_shm<shm_RCin>(&_rcin,SHM_RCIN,SEM_RCIN);
 		create_shm<shm_RCou>(&_rcout,SHM_RCOUT,SEM_RCOUT);
+		create_shm<shm_status>(&_status,SHM_STATUS,SEM_STATUS);
 		_rcio_data._rcinput.initialize();
 		_calib_rotors = false;
 		_num_rotors = 4;
@@ -33,6 +34,7 @@ using namespace std;
 	BridgeDriversNavio::BridgeDriversNavio(int argc, char * argv[])
 	{
 		//cout << "Constructor with arguments" << endl;
+		create_shm<shm_status>(&_status,SHM_STATUS,SEM_STATUS);
 		_calib_rotors = false;
 		_num_rotors=4;
 		if (argc > 1){
@@ -116,6 +118,7 @@ using namespace std;
 			_sensor.push_back("rcio");
 			create_shm<shm_RCin>(&_rcin,SHM_RCIN,SEM_RCIN);
 			create_shm<shm_RCou>(&_rcout,SHM_RCOUT,SEM_RCOUT);
+			create_shm<shm_status>(&_status,SHM_STATUS,SEM_STATUS);
 			_rcio_data._rcinput.initialize();
 			_calib_rotors = false;
 			_num_rotors = 4;
@@ -127,7 +130,8 @@ using namespace std;
 
 	void BridgeDriversNavio::runThreads()
 	{
-
+		_status_data._shmmsg = get_shm<shm_status>(&_status);
+		std::thread (acquireSTATUSData,&this->_status_data).detach();
 		for(std::string name_sensor: _sensor){
 			switch(fhash(name_sensor.c_str())){
 				case fhash("mpu"):
@@ -255,7 +259,8 @@ using namespace std;
          	if (close_shm(&_svo) == -1)
          	    cout << "SVO:Error closing shared memory.\n" << endl;
 
-
+         	if (close_shm(&_status) == -1)
+         	    cout << "STATUS:Error closing shared memory.\n" << endl;
          	std::terminate();
 		}catch(int error){
 
@@ -267,7 +272,7 @@ using namespace std;
 		try
 		{
 			signal(SIGINT,BridgeDriversNavio::close);
-
+			_status_data._shmmsg = get_shm<shm_status>(&_status);
 			for(std::string name_sensor: _sensor){
 				switch(fhash(name_sensor.c_str())){
 					case fhash("mpu"):

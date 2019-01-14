@@ -23,6 +23,17 @@
 #define NAVIO_TYPES_H_
 
 #include <stdint.h>
+typedef struct
+{
+    uint8_t _heartbeat;
+    double _time;
+    uint8_t _isStarted;
+    double _vehicle_attitude_desired[6];
+    double _vehicle_attitude[6];
+    double _vehicle_position_desired[6];
+    double _vehicle_position[6];
+    double _pwm_commanded[14];
+}shm_status;
 
 typedef struct
 {

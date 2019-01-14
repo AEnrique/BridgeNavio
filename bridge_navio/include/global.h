@@ -22,6 +22,6 @@ static struct shm_str<shm_totalStation> _totalstation;
 static struct shm_str<shm_gps> _gps;
 static struct shm_str<shm_px4flow> _px4flow;
 static struct shm_str<shm_svo> _svo;
-
+static struct shm_str<shm_status> _status;
 
 #endif /* GLOBAL_H_ */

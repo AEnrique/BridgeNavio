@@ -54,6 +54,11 @@ typedef struct
 
 typedef struct
 {
+	shm_status * _shmmsg;
+}status_str;
+
+typedef struct
+{
 	shm_px4flow _shmmsg;
 }px4flow_str;
 typedef struct
