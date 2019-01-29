@@ -79,9 +79,19 @@ using namespace std;
 						create_shm<shm_lightware>(&_sf11c,SHM_SF11C,SEM_SF11C);
 
 						break;
+					case fhash("teraranger"):
+						_sensor.push_back("teraranger");
+						create_shm<shm_lightware>(&_teraranger,SHM_TERARANGER,SEM_TERARANGER);
+
+						break;
 					case fhash("totalstation"):
 						_sensor.push_back("totalstation");
 						create_shm<shm_totalStation>(&_totalstation,SHM_TOTALSTATION,SEM_TOTALSTATION);
+
+						break;
+					case fhash("vicon"):
+						_sensor.push_back("vicon");
+						create_shm<shm_vicon>(&_vicon,SHM_VICON,SEM_VICON);
 
 						break;
 					case fhash("px4flow"):
@@ -189,6 +199,13 @@ using namespace std;
 					}
 					break;
 
+				case fhash("teraranger"):
+					if (set_shm<shm_lightware>(&_teraranger, _teraranger_data._shmmsg) == 0){
+						cout << "shm_lightware:Error to initializate the shared memory direction.\n" << endl;
+					}else{
+						std::thread (acquireTERARANGERData,&this->_teraranger_data).detach();
+					}
+					break;
 				case fhash("totalstation"):
 					if (set_shm<shm_totalStation>(&_totalstation, _totalstation_data._shmmsg) == 0){
 						cout << "shm_totalStation:Error to initializate the shared memory direction.\n" << endl;
@@ -196,7 +213,13 @@ using namespace std;
 						std::thread (acquireTotalStationData,&this->_totalstation_data).detach();
 					}
 					break;
-
+				case fhash("vicon"):
+					if (set_shm<shm_vicon>(&_vicon, _vicon_data._shmmsg) == 0){
+						cout << "shm_vicon:Error to initializate the shared memory direction.\n" << endl;
+					}else{
+						std::thread (acquireVICONData,&this->_vicon_data).detach();
+					}
+					break;
 				case fhash("px4flow"):
 					if (set_shm<shm_px4flow>(&_px4flow, _px4flow_data._shmmsg) == 0){
 						cout << "shm_px4flow:Error to initializate the shared memory direction.\n" << endl;
@@ -247,11 +270,17 @@ using namespace std;
            	if (close_shm(&_sf11c) == -1)
            		cout << "sf11c:Error closing shared memory.\n" << endl;
 
+           	if (close_shm(&_teraranger) == -1)
+           		cout << "teraranger:Error closing shared memory.\n" << endl;
+
            	if (close_shm(&_gps) == -1)
            		cout << "gps:Error closing shared memory.\n" << endl;
 
           	if (close_shm(&_totalstation) == -1)
           		cout << "TotalStation:Error closing shared memory.\n" << endl;
+
+          	if (close_shm(&_vicon) == -1)
+          		cout << "VICON:Error closing shared memory.\n" << endl;
 
          	if (close_shm(&_px4flow) == -1)
          		cout << "Px4Flow:Error closing shared memory.\n" << endl;
@@ -318,9 +347,21 @@ using namespace std;
 						}
 						break;
 
+					case fhash("teraranger"):
+						if (set_shm<shm_lightware>(&_teraranger, _teraranger_data._shmmsg) == 0){
+							cout << "shm_lightware:Error to write in shared memory direction.\n" << endl;
+						}
+						break;
+
 					case fhash("totalstation"):
 						if (set_shm<shm_totalStation>(&_totalstation, _totalstation_data._shmmsg) == 0){
 							cout << "shm_totalStation:Error to write in shared memory direction.\n" << endl;
+						}
+						break;
+
+					case fhash("vicon"):
+						if (set_shm<shm_vicon>(&_vicon, _vicon_data._shmmsg) == 0){
+							cout << "shm_vicon:Error to write in shared memory direction.\n" << endl;
 						}
 						break;
 

@@ -32,13 +32,15 @@
 #define SHM_ADC                  "/shm_adc"                		//-R/W ADC signals
 #define SHM_AHRS                 "/shm_ahrs"               		//-R/W AHRS signals
 #define SHM_SF11C                "/shm_sf11c"              		//-R/W SF11C signals
+#define SHM_TERARANGER           "/shm_teraranger"              //-R/W Teraranger signals
 #define SHM_TOTALSTATION         "/shm_totalstation"       		//-R/W Leica Total Station 50 signals
 #define SHM_PX4FLOW              "/shm_px4flow"       	   		//-R/W OpticalFlow
 #define SHM_SVO              	 "/shm_svo"       		   		//-R/W SVO algorithm signals
 #define SHM_ATTPX4               "/shm_attitudePX4EKF2"         //-R/W attitude ekf2 px4
 #define SHM_GLOBALPOSPX4         "/shm_globalPositionPX4EKF2"   //-R/W local position ekf2 px4
-#define SHM_LOCALPOSPX4          "/shm_localPositionPX4EKF2"   //-R/W global position ekf2 px4
-#define SHM_STATUS               "/shm_status"   //-R/W status
+#define SHM_LOCALPOSPX4          "/shm_localPositionPX4EKF2"    //-R/W global position ekf2 px4
+#define SHM_STATUS               "/shm_status"   				//-R/W status
+#define SHM_VICON                "/shm_vicon"   				//-R/W vicon data position and attitude(quaternion)
 
 ///SEMAPHORES CONSTANTS
 #define SEM_MPU9250              "/mysem_mpu9250"
@@ -50,6 +52,7 @@
 #define SEM_ADC                  "/mysem_adc"
 #define SEM_AHRS                 "/mysem_ahrs"
 #define SEM_SF11C                "/mysem_sf11c"
+#define SEM_TERARANGER           "/mysem_teraranger"
 #define SEM_TOTALSTATION         "/mysem_totalstation"
 #define SEM_PX4FLOW              "/mysem_px4flow"
 #define SEM_SVO              	 "/mysem_svo"
@@ -57,6 +60,7 @@
 #define SEM_GLOBALPOSPX4         "/mysem_globalPositionPX4EKF2"   //-R/W local position ekf2 px4
 #define SEM_LOCALPOSPX4          "/mysem_localPositionPX4EKF2"   //-R/W global position ekf2 px4
 #define SEM_STATUS               "/mysem_status"   //-R/W status
+#define SEM_VICON                "/mysem_vicon"
 ///////////////////////////////
 
 

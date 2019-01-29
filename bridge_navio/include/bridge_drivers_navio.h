@@ -59,6 +59,8 @@ public:
 	gps_str _gps_data;
 	px4flow_str _px4flow_data;
 	svo_str _svo_data;
+	vicon_str _vicon_data;
+	teraranger_str _teraranger_data;
 	status_str _status_data;
 
 private:

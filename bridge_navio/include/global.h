@@ -23,5 +23,7 @@ static struct shm_str<shm_gps> _gps;
 static struct shm_str<shm_px4flow> _px4flow;
 static struct shm_str<shm_svo> _svo;
 static struct shm_str<shm_status> _status;
+static struct shm_str<shm_vicon> _vicon;
+static struct shm_str<shm_lightware> _teraranger;
 
 #endif /* GLOBAL_H_ */

@@ -185,6 +185,55 @@
 	}
 //-----------------------------------------------------------------------------------------//
 
+/// Lightware altimeter TeraRanger One driver
+			void acquireTERARANGERData(teraranger_str * teraranger_data)
+			{
+				printf("TeraRanger One thread launched\n");
+
+				boost::asio::io_service io;
+				int fd;
+				unsigned char buffer_teraranger[3];
+				float measure;
+				//uint8_t checksum;
+				if ((fd = open("/dev/i2c-1", O_RDWR)) < 0)//with Grove cape i2c-2 is i2c-1 and vice.
+				{
+			    // Open port for reading and writing
+					fprintf(stderr, "Failed to open i2c bus\n");
+					exit(1);
+				}else{
+					while (true){
+						boost::asio::deadline_timer t(io, boost::posix_time::microseconds(2500));
+						if (ioctl(fd, I2C_SLAVE, 0x30) < 0) {
+							printf("Failed to acquire bus access and/or talk to slave.\n");
+							//ERROR HANDLING; you can check errno to see what went wrong
+							exit(1);
+						}else{
+							if (read(fd, buffer_teraranger, 3) != 3) {
+								printf("Unable to read from TeraRanger One\r");
+								fflush(stdout);
+							} else {
+								//checksum = crc8(buffer_teraranger, 3);
+								if (crc8(buffer_teraranger, 2)==buffer_teraranger[2]){
+									measure = float(((uint16_t)buffer_teraranger[0] << 8) | buffer_teraranger[1])*1e-3f;
+									if (measure > 14.0){
+										teraranger_data->_shmmsg._z = 14.0;
+									}else if(measure < 0.2){
+										teraranger_data->_shmmsg._z = 0.2;
+									}else{
+										teraranger_data->_shmmsg._z = measure;
+									}
+									//printf("Z: %f (m).\n",teraranger_data->_shmmsg._z);
+								}
+							}
+						}
+
+					t.wait();
+					}
+				}
+
+			}
+//-----------------------------------------------------------------------------------------//
+
 ///ADC
 	void acquireADCData(adc_str * adc_data)
 	{
@@ -337,6 +386,68 @@
 
 	}
 //-----------------------------------------------------------------------------------------//
+
+	/// TotalStation client
+		void acquireVICONData(vicon_str * vicon)
+		{
+			printf("VICON thread launched\n");
+			boost::asio::io_service io;
+			boost::asio::ip::udp::resolver resolver(io);
+			boost::asio::ip::udp::resolver::query query(PC_IP, UDP_PORT_VICON); //UDP_PORT
+			boost::asio::ip::udp::resolver::iterator iter = resolver.resolve(query);
+
+
+			boost::asio::io_service io_service;
+			//create a UDP socket
+
+			boost::asio::ip::udp::socket socket(io_service, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), c_uint(UDP_PORT_VICON)));
+
+			if (!socket.is_open())
+			{
+			   printf("Failed to open UDP client socket");
+			}else{
+				boost::array<char, 1> send_buf  = { 0 };
+
+				boost::asio::ip::udp::endpoint receiver_endpoint = iter->endpoint();
+
+				socket.send_to(boost::asio::buffer(send_buf), receiver_endpoint);
+
+				UDPVICON_msg msg = {0.0,0.0,0.0,0.0,0.0,0.0,0.0};
+				vicon->_shmmsg._x=msg._x;
+				vicon->_shmmsg._y=msg._y;
+				vicon->_shmmsg._z=msg._z;
+				vicon->_shmmsg._qx=msg._qx;
+				vicon->_shmmsg._qy=msg._qy;
+				vicon->_shmmsg._qz=msg._qz;
+				vicon->_shmmsg._qw=msg._qw;
+				//vicon->_shmmsg._time=static_cast<double>(msg._time);
+
+				boost::array<char, sizeof(shm_vicon)> recv_buf;
+
+
+				boost::asio::ip::udp::endpoint remote_endpoint = iter->endpoint();;
+				while (true) {
+
+					if (socket.receive_from(boost::asio::buffer(recv_buf),remote_endpoint) == sizeof(shm_vicon)){
+						memcpy(&msg,&recv_buf[0],sizeof(shm_vicon));
+
+						vicon->_shmmsg._x=msg._x;
+						vicon->_shmmsg._y=msg._y;
+						vicon->_shmmsg._z=msg._z;
+						vicon->_shmmsg._qx=msg._qx;
+						vicon->_shmmsg._qy=msg._qy;
+						vicon->_shmmsg._qz=msg._qz;
+						vicon->_shmmsg._qw=msg._qw;
+
+						recv_buf.assign(0);
+						//printf("x: %f| y: %f| z: %f\n",vicon->_shmmsg._x,vicon->_shmmsg._y,vicon->_shmmsg._z);
+					}
+				}
+				socket.close();
+			}
+
+		}
+	//-----------------------------------------------------------------------------------------//
 
 /// GPS
 	void acquireGPSData(gps_str * gps_data)

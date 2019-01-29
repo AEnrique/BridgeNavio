@@ -163,6 +163,19 @@ typedef struct
 
 }shm_px4flow;
 
+typedef struct
+{
+	double _x;
+	double _y;
+	double _z;
+
+	double _qx;
+	double _qy;
+	double _qz;
+	double _qw;
+
+}shm_vicon;
+
 typedef struct{
 
 	float _rollspeed;	/**< Roll angular speed (rad/s, Tait-Bryan, NED)		*/
